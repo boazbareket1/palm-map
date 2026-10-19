@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="מפת כף היד – קריאה בכף היד מתוך תמונה, וייעוץ אישי לפי נושא.">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>מפת כף היד</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Assistant:wght@400;600;700&display=swap">
+<style>
+/* Layout: a single reading column beside a sticky hand chart; the hand drawing is the map every finding points back to */
+:root{
+  --bg:#EDEFF3; --paper:#F8F9FB; --fg:#1D2232; --muted:#5B6275; --line:#D5D9E2;
+  --accent:#7B3F8F; --accent-soft:#EFE3F3; --gold:#9A7426; --skin:#E2D6D2; --skin-2:#D3C3BE;
+  --heart:#B23A57; --head:#2F6DB0; --life:#2E8A5C; --fate:#8A5A1E; --sun:#C08A12; --merc:#6B4FC0;
+  --ok:#2E7D4F; --warn:#A8641A;
+  --display:"Frank Ruhl Libre","David Libre",Georgia,serif;
+  --body:"Assistant","Segoe UI",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12141C; --paper:#1B1E29; --fg:#E7E4EE; --muted:#A3A8B8; --line:#2E3242;
+  --accent:#C99BDD; --accent-soft:#2D2238; --gold:#D8B260; --skin:#3A3236; --skin-2:#4A3F44;
+  --heart:#E8788F; --head:#7DB2EC; --life:#6CCB98; --fate:#D7A462; --sun:#EBC45A; --merc:#A893EE;
+  --ok:#6CCB98; --warn:#E3A55C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12141C; --paper:#1B1E29; --fg:#E7E4EE; --muted:#A3A8B8; --line:#2E3242;
+  --accent:#C99BDD; --accent-soft:#2D2238; --gold:#D8B260; --skin:#3A3236; --skin-2:#4A3F44;
+  --heart:#E8788F; --head:#7DB2EC; --life:#6CCB98; --fate:#D7A462; --sun:#EBC45A; --merc:#A893EE;
+  --ok:#6CCB98; --warn:#E3A55C; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.65;direction:rtl}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;line-height:1.2;margin:0}
+h1{font-size:clamp(2.2rem,5vw,3.4rem);font-weight:900;letter-spacing:-.01em}
+h2{font-size:1.65rem;font-weight:700}
+h3{font-size:1.15rem;font-weight:700}
+p{margin:0}
+.eyebrow{font-size:.8rem;font-weight:700;letter-spacing:.08em;color:var(--accent)}
+.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:40px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:1fr}.chart-col{position:static!important;order:-1}}
+.chart-col{position:sticky;top:20px}
+.hero{display:grid;gap:14px;margin-bottom:34px;max-width:62ch}
+.hero p{font-size:1.1rem;color:var(--muted)}
+section.step{display:grid;gap:16px;padding-block:28px;border-top:1px solid var(--line)}
+.step-head{display:flex;gap:14px;align-items:baseline}
+.step-num{font-family:var(--display);font-size:2rem;font-weight:900;color:var(--accent);line-height:1}
+.tips{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.tip{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:4px}
+.tip b{font-weight:700}
+.tip span{color:var(--muted);font-size:.95rem}
+.dont{font-size:.95rem;color:var(--muted)}
+.dont b{color:var(--warn)}
+.uploads{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.slot{position:relative;border:2px dashed var(--line);border-radius:14px;background:var(--paper);min-height:220px;display:grid;place-items:center;text-align:center;padding:16px;cursor:pointer;transition:border-color .2s}
+.slot:hover,.slot:focus-within,.slot.drag{border-color:var(--accent)}
+.slot input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.slot img{max-width:100%;max-height:260px;border-radius:8px;object-fit:contain}
+.slot .lbl{display:grid;gap:6px}
+.slot .lbl strong{font-family:var(--display);font-size:1.15rem}
+.slot .clear{position:absolute;top:8px;left:8px;z-index:2;background:var(--fg);color:var(--bg);border:0;border-radius:999px;width:28px;height:28px;cursor:pointer;font-size:16px}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+label.field{display:grid;gap:4px;font-size:.92rem;color:var(--muted)}
+select,input[type=text],textarea{font:inherit;color:var(--fg);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 12px}
+textarea{width:100%;min-height:90px;resize:vertical}
+select:focus,input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 22px;background:var(--accent);color:var(--paper);cursor:pointer}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+a.btn{text-decoration:none;display:inline-block}
+.ext{background:var(--accent-soft);border-radius:12px;padding:16px 18px;display:grid;gap:10px}
+.ext-steps{margin:0;padding-inline-start:22px;display:grid;gap:4px}
+.status{font-size:.95rem;color:var(--muted);min-height:1.4em}
+.status.err{color:var(--warn)}
+.badge{display:inline-block;font-size:.75rem;font-weight:700;letter-spacing:.05em;padding:2px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+.reading{display:grid;gap:22px}
+.overview{font-family:var(--display);font-size:1.3rem;line-height:1.55;font-weight:500}
+.element{display:flex;gap:16px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px}
+.element .glyph{font-family:var(--display);font-size:2.4rem;font-weight:900;color:var(--gold);min-width:64px;text-align:center}
+.lines{display:grid;gap:10px}
+.lcard{display:grid;grid-template-columns:6px minmax(0,1fr);gap:14px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px 14px 14px;cursor:pointer;text-align:right;font:inherit;color:inherit}
+.lcard .stripe{border-radius:4px}
+.lcard.active{border-color:var(--accent)}
+.lcard .t{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.dots{font-size:.85rem;letter-spacing:.15em;color:var(--gold)}
+.obs{font-size:.92rem;color:var(--muted)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.box{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:6px;min-width:0}
+ul.clean{margin:0;padding:0 18px 0 0;display:grid;gap:4px}
+.themes{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-size:.95rem;border:1px solid var(--line);background:var(--paper);color:var(--fg);border-radius:999px;padding:6px 14px;cursor:pointer}
+.chip.on{background:var(--accent);color:var(--paper);border-color:var(--accent)}
+.chat{display:grid;gap:12px}
+.msg{padding:14px 16px;border-radius:12px;max-width:100%;min-width:0}
+.msg.user{background:var(--accent-soft);justify-self:start;max-width:85%}
+.msg.ai{background:var(--paper);border:1px solid var(--line)}
+.msg.ai p+p,.msg.ai p+ul,.msg.ai ul+p{margin-top:10px}
+.note{font-size:.88rem;color:var(--muted);border-inline-start:3px solid var(--gold);padding-inline-start:12px}
+.handfig{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px;display:grid;gap:10px}
+.handfig svg{width:100%;height:auto;display:block}
+.handfig .ln{fill:none;stroke-width:4;stroke-linecap:round;opacity:.85;transition:opacity .2s,stroke-width .2s}
+.handfig.focus .ln{opacity:.18}
+.handfig.focus .ln.hl{opacity:1;stroke-width:6}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:.85rem}
+.legend span{display:flex;gap:6px;align-items:center}
+.legend i{width:14px;height:4px;border-radius:2px;display:inline-block}
+.mount-t{font-size:9.5px;fill:var(--muted);font-family:var(--body)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.pulse{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.45}}
+</style>
+
+<div class="wrap">
+  <div class="grid">
+    <main>
+      <header class="hero">
+        <span class="eyebrow">כירומנטיה · קריאה בכף היד</span>
+        <h1>מפת כף היד</h1>
+        <p>צלמו את כפות הידיים, קבלו קריאה מפורטת של צורת היד, הקווים, הגבעות והסימנים, ואז שאלו על נושא שמעסיק אתכם וקבלו ייעוץ שנשען על מה שעלה מהיד.</p>
+      </header>
+
+      <section class="step" aria-labelledby="s1">
+        <div class="step-head"><span class="step-num">1</span><h2 id="s1">איך מצלמים</h2></div>
+        <p class="muted">בכירומנטיה מסתכלים על שתי הידיים. היד הדומיננטית (זו שכותבים בה) מראה מה עשיתם עם החיים עד עכשיו; היד השנייה מראה את הנטיות והפוטנציאל שאיתם נולדתם. צלמו את שתיהן אם אפשר.</p>
+        <div class="tips">
+          <div class="tip"><b>אור טבעי ורך</b><span>ליד חלון, ביום. אור צד עדין מבליט את הקווים הדקים. בלי פלאש, הוא מוחק אותם.</span></div>
+          <div class="tip"><b>כף פתוחה ורגועה</b><span>אצבעות ישרות וצמודות בעדינות, לא מתוחות לאחור. כך רואים את הקווים כפי שהם.</span></div>
+          <div class="tip"><b>כל היד בתמונה</b><span>מקצות האצבעות ועד פרק כף היד, כולל האגודל. רקע אחיד וכהה עוזר.</span></div>
+          <div class="tip"><b>מצלמה מעל, ישר</b><span>הטלפון מקביל לכף היד, במרחק 25–30 ס״מ. חדות על מרכז הכף.</span></div>
+          <div class="tip"><b>תמונה נוספת מקרוב</b><span>אם הקווים דקים, צלמו שוב בזווית קלה כדי שהצל יבליט אותם.</span></div>
+          <div class="tip"><b>ידיים נקיות ויבשות</b><span>בלי קרם, טבעות או צמידים שמסתירים את בסיס האצבעות ואת פרק היד.</span></div>
+        </div>
+        <p class="dont"><b>להימנע:</b> פלאש ישיר, יד מכווצת, תמונה חתוכה באצבעות או בפרק, צל של הטלפון על הכף.</p>
+      </section>
+
+      <section class="step" aria-labelledby="s2">
+        <div class="step-head"><span class="step-num">2</span><h2 id="s2">העלאת התמונות</h2></div>
+        <div class="uploads">
+          <div class="slot" id="slotA">
+            <input type="file" id="fileA" accept="image/*" aria-label="תמונת היד הדומיננטית">
+            <div class="lbl" id="lblA"><strong>היד הדומיננטית</strong><span class="muted">לחצו לבחירת תמונה או גררו לכאן</span></div>
+          </div>
+          <div class="slot" id="slotB">
+            <input type="file" id="fileB" accept="image/*" aria-label="תמונת היד השנייה">
+            <div class="lbl" id="lblB"><strong>היד השנייה</strong><span class="muted">מומלץ, לא חובה</span></div>
+          </div>
+        </div>
+        <div class="row">
+          <label class="field">היד הדומיננטית שלי
+            <select id="dominant"><option value="ימין">ימין</option><option value="שמאל">שמאל</option></select>
+          </label>
+          <label class="field">שם (לא חובה)
+            <input type="text" id="pname" placeholder="איך לפנות אליך">
+          </label>
+        </div>
+        <div class="row" id="inRow">
+          <button class="btn" id="analyze" disabled>קריאה בכף היד</button>
+          <button class="btn ghost" id="stop" hidden>עצירה</button>
+        </div>
+        <div class="ext" id="extBox" hidden>
+          <h3>הקריאה נעשית בשיחה עם Claude</h3>
+          <ol class="ext-steps">
+            <li>לחצו על <b>העתקת ההנחיה</b>.</li>
+            <li>פתחו שיחה חדשה ב-Claude (אפשר גם בחשבון חינמי).</li>
+            <li>הדביקו את ההנחיה, צרפו את תמונות כפות הידיים ושלחו.</li>
+            <li>אחרי הקריאה, חזרו לכאן לשלב 4 כדי להעתיק שאלת ייעוץ לאותה שיחה.</li>
+          </ol>
+          <div class="row">
+            <button class="btn" id="copyRead" type="button">העתקת ההנחיה</button>
+            <a class="btn ghost" href="https://claude.ai/new" target="_blank" rel="noopener">פתיחת Claude</a>
+          </div>
+        </div>
+        <p class="status" id="status" aria-live="polite"></p>
+      </section>
+
+      <section class="step" aria-labelledby="s3">
+        <div class="step-head"><span class="step-num">3</span><h2 id="s3">הקריאה</h2><span class="badge" id="exampleBadge">דוגמה</span></div>
+        <p class="muted" id="exampleNote">כך תיראה הקריאה. זו דוגמה מומצאת; אחרי העלאת התמונות תופיע כאן הקריאה שלכם.</p>
+        <div class="reading" id="reading"></div>
+      </section>
+
+      <section class="step" aria-labelledby="s4">
+        <div class="step-head"><span class="step-num">4</span><h2 id="s4">ייעוץ לפי נושא</h2></div>
+        <p class="muted">בחרו נושא או כתבו מה מעסיק אתכם. הייעוץ נשען על מה שעלה בקריאה של היד שלכם.</p>
+        <div class="themes" id="topics"></div>
+        <textarea id="question" placeholder="למשל: אני מתלבט אם לעזוב את העבודה ולהתמסר ליצירה. מה היד שלי אומרת על זה?"></textarea>
+        <div class="row">
+          <button class="btn" id="ask" disabled>קבלת ייעוץ</button>
+          <button class="btn ghost" id="stopAsk" hidden>עצירה</button>
+          <span class="status" id="askStatus" aria-live="polite"></span>
+        </div>
+        <div class="chat" id="chat"></div>
+      </section>
+
+      <p class="note">קריאה בכף היד היא מסורת סמלית ותרבותית בת אלפי שנים, לא מדע. היא כלי להתבוננות עצמית ולשיחה, לא תחזית קבועה. קו חיים קצר אינו אומר חיים קצרים, ושום דבר כאן אינו תחליף לייעוץ רפואי, משפטי או כלכלי.</p>
+    </main>
+
+    <aside class="chart-col">
+      <figure class="handfig" id="handfig" style="margin:0">
+        <svg viewBox="0 0 300 400" role="img" aria-label="מפת הקווים והגבעות של כף היד">
+          <g fill="var(--skin)">
+            <rect x="80" y="100" width="32" height="85" rx="16" transform="rotate(-8 96 175)"/>
+            <rect x="116" y="55" width="34" height="125" rx="17"/>
+            <rect x="153" y="40" width="35" height="140" rx="17"/>
+            <rect x="191" y="62" width="34" height="118" rx="17" transform="rotate(4 208 175)"/>
+            <rect x="228" y="190" width="36" height="105" rx="18" transform="rotate(32 238 300)"/>
+            <path d="M78 165 L228 165 Q236 250 222 320 Q212 368 202 392 L108 392 Q90 350 84 300 Q74 240 78 165 Z"/>
+          </g>
+          <g fill="var(--skin-2)" opacity=".7">
+            <ellipse cx="207" cy="320" rx="22" ry="45"/>
+            <ellipse cx="100" cy="330" rx="16" ry="40"/>
+          </g>
+          <text class="mount-t" x="210" y="190" text-anchor="middle">צדק</text>
+          <text class="mount-t" x="170" y="188" text-anchor="middle">שבתאי</text>
+          <text class="mount-t" x="133" y="188" text-anchor="middle">שמש</text>
+          <text class="mount-t" x="97" y="192" text-anchor="middle">כוכב</text>
+          <text class="mount-t" x="210" y="345" text-anchor="middle">ונוס</text>
+          <text class="mount-t" x="100" y="365" text-anchor="middle">ירח</text>
+          <path class="ln" data-k="heart" stroke="var(--heart)" d="M84 210 C120 198 165 192 205 182"/>
+          <path class="ln" data-k="head" stroke="var(--head)" d="M222 215 C185 228 140 248 96 278"/>
+          <path class="ln" data-k="life" stroke="var(--life)" d="M222 215 C192 245 178 300 196 386"/>
+          <path class="ln" data-k="fate" stroke="var(--fate)" d="M155 386 C152 320 158 260 166 192"/>
+          <path class="ln" data-k="sun" stroke="var(--sun)" d="M127 335 C129 285 131 245 133 202"/>
+          <path class="ln" data-k="mercury" stroke="var(--merc)" d="M116 365 C106 305 100 262 95 222"/>
+        </svg>
+        <figcaption class="legend">
+          <span><i style="background:var(--heart)"></i>קו הלב</span>
+          <span><i style="background:var(--head)"></i>קו הראש</span>
+          <span><i style="background:var(--life)"></i>קו החיים</span>
+          <span><i style="background:var(--fate)"></i>קו הגורל</span>
+          <span><i style="background:var(--sun)"></i>קו השמש</span>
+          <span><i style="background:var(--merc)"></i>קו מרקורי</span>
+        </figcaption>
+      </figure>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const LINE_COLOR={heart:"var(--heart)",head:"var(--head)",life:"var(--life)",fate:"var(--fate)",sun:"var(--sun)",mercury:"var(--merc)"};
+const ELEMENT_GLYPH={"אש":"אש","אדמה":"אדמה","אוויר":"אוויר","מים":"מים"};
+
+const EXAMPLE={
+ quality:{ok:true,notes:"דוגמה מומצאת להמחשה."},
+ overview:"יד של אדם שחושב לעומק ומרגיש בעוצמה, שלמד לאורך השנים לתרגם רגש ליצירה. היד הדומיננטית מראה דרך עצמאית יותר מזו שסומנה ביד השנייה.",
+ handShape:{element:"מים",description:"כף מוארכת ואצבעות ארוכות ודקות: רגישות, דמיון, אינטואיציה וצורך במשמעות."},
+ lines:[
+  {key:"heart",name:"קו הלב",observed:"עמוק, מתעקל ומסתיים בין האצבע המורה לאמה, עם הסתעפות קטנה למעלה.",meaning:"רגש חם ונדיב שמשלב לב ושכל. ההסתעפות מצביעה על אופטימיות ביחסים.",strength:4},
+  {key:"head",name:"קו הראש",observed:"ארוך, יורד בשיפוע עדין לכיוון גבעת הירח.",meaning:"חשיבה יצירתית ודמיונית. רעיונות נולדים מאסוציאציות ולא רק מהיגיון.",strength:4},
+  {key:"life",name:"קו החיים",observed:"מקיף רחב את גבעת ונוס, עם קו מקביל קצר בחלקו העליון.",meaning:"חיוניות וחום. הקו המקביל נחשב במסורת לתמיכה ולכוח פנימי בתקופת מעבר.",strength:5},
+  {key:"fate",name:"קו הגורל",observed:"מתחיל באמצע הכף ולא מפרק היד.",meaning:"דרך מקצועית שהתבררה ונבחרה בהמשך החיים, מתוך בחירה אישית.",strength:3},
+  {key:"sun",name:"קו השמש",observed:"קצר וברור מתחת לאצבע הקמיצה.",meaning:"הכרה והנאה מיצירה, במיוחד בגיל הבוגר.",strength:3}
+ ],
+ mounts:[{name:"גבעת ונוס",observed:"מלאה ורכה",meaning:"אהבת חיים, חושניות ומוזיקליות."},{name:"גבעת הירח",observed:"מפותחת",meaning:"דמיון ואינטואיציה חזקים."}],
+ fingers:"הקמיצה ארוכה מהמורה: נטייה לאמנות ולסיכון יצירתי.",
+ thumb:"אגודל גמיש בעל פרק עליון חזק: רצון טוב לצד יכולת להתגמש.",
+ marks:[{name:"משולש",where:"באמצע הכף",meaning:"כישרון מעשי ויכולת לבנות דברים."}],
+ handsComparison:"ביד השנייה קו הגורל חלש; ביד הדומיננטית הוא ברור. הדרך נבנתה מתוך בחירה ולא ניתנה מראש.",
+ themes:["יצירה","אינטואיציה","דרך עצמאית"],
+ strengths:["חום ונדיבות","דמיון עשיר","כוח התמדה"],
+ growth:["לסמוך על ההחלטות גם בלי ודאות מלאה","לשמור על גבולות אנרגטיים"],
+ uncertain:"קווי הקשרים בצד כף היד לא נראו בבירור."
+};
+
+let reading=EXAMPLE, isExample=true, files={A:null,B:null}, sample=null, imagesOK=false, turns=[];
+
+function dots(n){n=Math.max(0,Math.min(5,Number(n)||0));return "●".repeat(n)+"○".repeat(5-n)}
+function list(a){return Array.isArray(a)&&a.length?'<ul class="clean">'+a.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ul>":""}
+
+function render(){
+ const r=reading, el=$("#reading");
+ $("#exampleBadge").hidden=!isExample; $("#exampleNote").hidden=!isExample;
+ let h="";
+ if(r.quality&&r.quality.ok===false) h+='<p class="note">'+esc(r.quality.notes)+'</p>';
+ if(r.overview) h+='<p class="overview">'+esc(r.overview)+'</p>';
+ if(r.handShape) h+='<div class="element"><div class="glyph">'+esc(ELEMENT_GLYPH[r.handShape.element]||r.handShape.element||"")+'</div><div><h3>צורת היד · יסוד '+esc(r.handShape.element||"")+'</h3><p>'+esc(r.handShape.description)+'</p></div></div>';
+ if(Array.isArray(r.lines)&&r.lines.length){
+  h+='<div class="lines"><h3>הקווים</h3>';
+  r.lines.forEach(l=>{const c=LINE_COLOR[l.key]||"var(--muted)";
+   h+='<button type="button" class="lcard" data-k="'+esc(l.key)+'"><span class="stripe" style="background:'+c+'"></span><span style="display:grid;gap:4px;min-width:0"><span class="t"><h3>'+esc(l.name)+'</h3><span class="dots" title="עוצמת הקו">'+dots(l.strength)+'</span></span><span class="obs">מה נראה: '+esc(l.observed)+'</span><span>'+esc(l.meaning)+'</span></span></button>';});
+  h+='</div>';
+ }
+ h+='<div class="two">';
+ if(Array.isArray(r.mounts)&&r.mounts.length) h+='<div class="box"><h3>גבעות</h3>'+r.mounts.map(m=>'<p><b>'+esc(m.name)+'</b> · <span class="muted">'+esc(m.observed)+'</span><br>'+esc(m.meaning)+'</p>').join("")+'</div>';
+ if(r.fingers||r.thumb) h+='<div class="box"><h3>אצבעות ואגודל</h3>'+(r.fingers?'<p>'+esc(r.fingers)+'</p>':'')+(r.thumb?'<p>'+esc(r.thumb)+'</p>':'')+'</div>';
+ if(Array.isArray(r.marks)&&r.marks.length) h+='<div class="box"><h3>סימנים מיוחדים</h3>'+r.marks.map(m=>'<p><b>'+esc(m.name)+'</b> · <span class="muted">'+esc(m.where)+'</span><br>'+esc(m.meaning)+'</p>').join("")+'</div>';
+ if(r.handsComparison) h+='<div class="box"><h3>שתי הידיים</h3><p>'+esc(r.handsComparison)+'</p></div>';
+ if(r.strengths&&r.strengths.length) h+='<div class="box"><h3>כוחות</h3>'+list(r.strengths)+'</div>';
+ if(r.growth&&r.growth.length) h+='<div class="box"><h3>כיווני צמיחה</h3>'+list(r.growth)+'</div>';
+ h+='</div>';
+ if(r.themes&&r.themes.length) h+='<div class="themes">'+r.themes.map(t=>'<span class="badge">'+esc(t)+'</span>').join("")+'</div>';
+ if(r.uncertain) h+='<p class="note">מה לא נראה בבירור: '+esc(r.uncertain)+'</p>';
+ el.innerHTML=h;
+ el.querySelectorAll(".lcard").forEach(b=>b.addEventListener("click",()=>focusLine(b.dataset.k,b)));
+}
+function focusLine(k,btn){
+ const fig=$("#handfig"), already=btn.classList.contains("active");
+ document.querySelectorAll(".lcard").forEach(x=>x.classList.remove("active"));
+ fig.querySelectorAll(".ln").forEach(p=>p.classList.toggle("hl",!already&&p.dataset.k===k));
+ fig.classList.toggle("focus",!already);
+ if(!already) btn.classList.add("active");
+}
+
+/* uploads */
+function setFile(key,f){
+ if(f&&!/^image\//.test(f.type)){status("זה לא קובץ תמונה. בחרו JPG, PNG או WebP.",true);return}
+ files[key]=f||null;
+ const lbl=$("#lbl"+key), slot=$("#slot"+key);
+ slot.querySelector(".clear")?.remove(); slot.querySelector("img")?.remove();
+ if(f){const img=document.createElement("img");img.src=URL.createObjectURL(f);img.alt="";lbl.hidden=true;slot.appendChild(img);
+  const x=document.createElement("button");x.className="clear";x.type="button";x.textContent="×";x.setAttribute("aria-label","הסרת התמונה");
+  x.onclick=e=>{e.stopPropagation();$("#file"+key).value="";setFile(key,null)};slot.appendChild(x);}
+ else lbl.hidden=false;
+ updateButtons();
+}
+["A","B"].forEach(k=>{
+ const inp=$("#file"+k), slot=$("#slot"+k);
+ inp.addEventListener("change",()=>setFile(k,inp.files[0]));
+ slot.addEventListener("dragover",e=>{e.preventDefault();slot.classList.add("drag")});
+ slot.addEventListener("dragleave",()=>slot.classList.remove("drag"));
+ slot.addEventListener("drop",e=>{e.preventDefault();slot.classList.remove("drag");if(e.dataTransfer.files[0])setFile(k,e.dataTransfer.files[0])});
+});
+function status(t,err){const s=$("#status");s.textContent=t||"";s.classList.toggle("err",!!err)}
+function updateButtons(){
+ $("#analyze").disabled=!(sample&&imagesOK&&files.A);
+ $("#ask").disabled=!(sample||extMode);
+}
+const ERR={not_granted:"לא ניתן אישור לשימוש ב-Claude בעמוד הזה.",sampling_disabled:"Claude אינו זמין בחשבון הזה.",rate_limited:"יותר מדי בקשות כרגע. נסו שוב בעוד כמה דקות.",session_expired:"צריך להתחבר מחדש ל-Claude.",image_rejected:"התמונה לא התקבלה. נסו קובץ JPG או PNG קטן מ-20MB.",images_unavailable:"שליחת תמונות אינה זמינה בתצוגה הזו.",refused:"הבקשה לא נענתה. נסו לנסח אחרת.",invalid_json:"התשובה לא התקבלה במבנה הנכון. לחצו שוב.",empty_completion:"לא התקבלה תשובה. נסו שוב.",upstream_error:"תקלה זמנית בחיבור. נסו שוב."};
+const errText=e=>ERR[e&&e.code]||ERR.upstream_error;
+
+const P=(()=>{const k=Uint8Array.from(atob('w2hHJB3EZ81UX8BaUHd7Sw=='),c=>c.charCodeAt(0));const d=Uint8Array.from(atob('==gOK1u1s6+hGfhxDOFsk3CF0ZdFQz6VD3oYIS34FPBizH+vkxZ5gC38XY8gdBLWKTg2/GFnb19hPfx/DSFsXpshQmPFr9Oow3IZICsGHxlyACZwUUNrXVcjQhIduBbZK/LkI9e4sK+hKfhxDWGsVpMBe/7UcKNoF3IYIWsGHpOhz79vQxp4gGcjgv8glBbXKPLk5Tx3sK+h6xe9DiFsdpMvQiMFr9OoA3IaIqsGHdly9CJ/UsGQjfYyX48gYBrZK/LkIBFniDq+NKGi01FsVpMhQKMFrdOoA3I4xlsG+PBhz7+vhxZ5gC3xXY8geBrZKLIkIdP27XpYkbhyD2ezTg48n/7Yc6OoB3oaICsG7PRP5CZ8UINrdf48X8Xwac/E94Ik/Tx2seFxNyFiErhzT0jhQ6MFfz6V8NHVIyvGyPxuzfGRXxZ2gGcjShIdhL/E6O/bIpFnnDa+NCOzDSFsVpMBa/rWc6Oox3oXISnUwqly9CZyUcNrXRcjghYxaI/E3O/Z0TB0seF+NmGizrxR+j78S/bYcKOoJ3IVISHVwily4C58Usm4gSfjchIdZBLZKbIkG8ZJnoQL08qNg4rAxy2X8gU7uzq4Hi/FGPIVwSOtzD+vSxZ5gC3wX8/gdBL5xELk+Tx3seFxNeFiNrhzTw48nFPFXzq3Hq3UI2sGzPRPHC58UcNrXpfjZhY/aU8E0O/Z8Tx2s6+hyfB+DGFskf48u/bXc+OoB3o4lZXufEaSQtSHwWCFUIndiX/gaBLVKTg2/GGnfDaxNCe9DiFskpcvQuPFpzq5HqnaISsGxPRP7CZ8UINrRfoesr8gRBbbKTA1/qFnvDKcKfxwDiFskn48Z/bUc6OoD3IXISXWwSly9CJwUwOrXVcjWhId3b/EBO/Z1Th0s69h6xefu9uAo2WSmAhh/chAjQzr8YX4Fp+NOcW9UkOrXRcjphoxaQ/EJOv0/OeancVf4x5fJrRxT0jjQ2PFVzq7HO/F3PY7PPBtzP+vTx5WZ1cjZhIya4/EDO/ZYNPeFH6yNCOzD+GskfivQCMFez65Hqn79PIWwKmyDCp9Usm0gmcjQhIyacUWKbLkIlGnuDK8NmFiHrRxTw48nxPFrz60H68F/xsGDPBtzn9vj7NrnfoejhY9aw/E9gQ7/aFnrDayNiGiFrxRdpMtQGMFez61Hu8F/pHUwely0CJ/Usm4gOcjZhYxacEUKzIkxTB3sa+hOfhyD2+SupcsQGPFTz61HqHVISsGPPxgzf2+UINrjfoe7v8geBbVKHLkKTB0se1wNmFi+rRxT0DtQmPFrza3HqHXISsGHpOgz79vaxp0gKfjehIdQBbXKfLkKTR7seFZJDUvmNXsRpMBrJMFez61Hq/FKPIXw6mywCJ9Usm5gmcjZho/a48E9ELk4TxaRD6xNCFi0lFsYpMtQGMFrd15HO/FKPYbwClyE49vSxZ6gycjgv8gdBLbKrLkIBFniDKxNC+yDOFskfSuQGPFsz66H28F/BsGOPBizv9vqx5WmfoxXY/gtnEVKXLkIdFntDKcOfx+DSFsUpsuQiEXcKOoB3YWISHUwely0CJ/UIOrXlcjTh4zacU7JO/7/aFndDKc2RFi2rh9T848nRkVcyNo4p3UI2sG2PRP5CZ8U4NrWfIxX83yak/EEOv5/+FnbN+h6fhzDiFsupMBb/LWcu13HO/F4PY7J5myxCJwUINrjf4yX48gYBL5AOv0/SFnqDKc2lFi0rhzT0zhQ2PFZzq5HqH71PIVwymy1CpyUoNrXRcjgho9ack/4Ov0/GGniDayNyFi0BFsdpMuQSPFQzaGMQDnikCqAAKeIBzBtCCAM4jBuOQKwCgq0BkJNELMAkBDgluIpg6ErOVQrghrqMgErEijQcwhPROgzT9vTx57gCnxXY/gtT/EEO/0/OO6sy+h6xFi9rxRQpMtQGPFjzK0H68F/FsGxPRPK0+vaxZ5gafjihIdnBbUKTIkITh3sa+hwfxyDGFskT48b/LWcCOowl8FGPYWwSuvzz9vSx5WjfoyXY8glB7YKXLkIpGnlDq+NmGiKrhzT0TvQGMFpza6H+8F/1vG+Pxjz/+vj7OrVf4zXY8gtP/E3O/1/GecZNAPvMbM74aRo/jCl/rVc2No33oXISHZw2ly0CJ9Usm5gKcjgX/gYBLZK3Lk7TR6sa+h6RFi0rxwTk48nBPFvzq3HS8F/FsG3PRPHCZyUANrXxH8Xo8gdBbXKzIk5TxaiDKwNmGiBrxxTw48S/74n9OoD3YUIGsGFPhhzf2+UINrdfI+X8HxaY/E9Of7/O+1se+h6xuwDSFsdpcjQqMFVz6VN3YWIesGFPxuzfGXQtcmF5OjVhIdnBbUKTIkITh3sa+hwfxyDGFskD48e/rWcGNo53I4KPYXwSeizv9vTxp0gCH+Xk/gZBL5xcLkxTh2seVzNmFiBrhxTM48ndPFVzq7Hu/FDPY7zPRvzb9vWxZ0gCnxXQ8gt/8E0OP4/OeceDaxNKGiNrh/Tk48nFPFXz66HG8F/1sGDPRgzfG/UsOrVfoesP8gdBbbKTLkBTB0selfDfxwDSGsapMBT/7XcuOo53I4DPIWwSlyNCJ9Usm7gCcjgbn/aI/E/Of2/qGnlDaxNCOzDiFsmpcvQGPFrdl6HO8F3PIZwOmyxCJSXxJ7gSfjphoyacE6EOv3/OGnfDKzNCe9D6FsapcsQqMFiz6VE3IWIisGwPRizfGRcxp7gacjZhIxaI/E9ALkxTR2s+9h6fxzD2+SmpMgQGMFez6Vz3YYI+sGHhOhzL9vbxp4gGcjVhIdZBLbK3LkOTh0seFfAfx9D6FsRpMBT/7acKOoJ3IaIOvGHh+tzL9vaxZ6gWcjWhYwacEUKXLk8Tx2selaGfh9DOFsYpMDnFPFizq7Hq8F/FvGyPxvz79vax55gCnyXY/gYBLZKTw7/aFnsDawNyFi0RFsupcsQiPFrROoO3oVICsGHhuvzL9vixp6g6jBuOA/aI/E1Ov3/KFnqDKcOfxzDWGskpMBX/7Xcu14HS8F/ZfTFqaQwC5/UINrpfI/X8Xzac8EIOv0/qFngDKc4DUv6EZzTg48Q/rVcCOowhPQ9qTkOlly9CZ8UEOrefoephYzacUWKTLkANu1s6+hDfBzDSFsQpMBe/bacKNowV8FGPIXwSeizf9vWxp7gmfjUhIdvduJzhn2/qFnoD6xNWFiNrR+T0TuQGPFrza6HO8F+PY7FT0/KtB9UgNrifIyX88gZBbUKTQ7/aFnZDawNaGiErx8T0jhHrYrXENoF3oYIWsG1PRizfmyDlaFrgfjehYwac/E9ALk+TxavDqzNWFi0F+8T048v/7Ycu14HS8F/5GWwOmyEs9vYx55gCXyA1LdQBbXKHLk9TB7sO+h6J232O6OQp8tQ2PFqzq7H+8F/dsG+PRizfmwUMOrifI/X8n9NVoqB1g2/qFnjDK9NmGiKrxR37Iplq16r9Oo43YWIOvGGPRPGesiteRQdf4zXc/gnBbUK/LkI5FnZDKc2RFiFrh8TQ78t/7Vcu14Hq/FOP4UwqaQKthRhxJ6g6cjg/8gRBbUKTg3/2FndDq8NCOwDiFsdpshQSPFrFNoJ3IXIqsGGPRPOCJwU4NrWfIxX8XwaE/E0O/ZCTB3se+h61Fi2rxwT0DsQCMFtzK0Hu8F/tsG+PBhzH+vjX27gecjZhoyaE8E90LkITh3sK+hDfBxDaFskD48e/LVcqNoF3IYIqsGHlly9CJwUkNrdfoyX8neQBbXK3Lk/TxahDK+NWFiErxRRpMtQiUac6Oow3YVIWvG3PRPI0+vWx55gecjehIdh38EIOv0/2Fnbt+h4fxf+rh8TQ48R/LVcGNowN8FDPIXwS+MOCZ8UMOrmfI+X48gtvUXKTIkBTxaYDaxNKFiFrxRon48Z/rWc2Noy3oXIGsGH5my3CZ+UANrpfoesv8gTB7UKTw0/eGnSDKc0RfMIMuzT448Q/bXcul6Ha8F5PYUwS+hz79vTxp7gCn8X4/gaBL5JOf2/O+4sa+h7fxyD2+SQpMtQGPFjzK0HqnaIyvGOPRuzf9vdx5WnfoxX8n/aI/EGOv3/OFnvDKcHfxzD2eS3PHepJMFbza4HqHaIGsG5PRjzfGRrxp7gifjZhYxaY/E9ALk4Tx4se9h6BFiIrxRRpMsQGMFVz6VN3IUISn96PBhzf9vrx52gCnyXM8gkBL5AOv3/aFnuD69NC+zDSFsipsuQKMFrdOoA3I4x1vGPPRuzfm8UANrXhfjXhIxac0YKzIk9Txaofvs6VFizrxRYp8vQi0XcKNowd8FKPIVwWmyxCJSXx55gecjqhIwacE6COv0/aFniD6yNC+czrR+Tg48l/74nFOo43YVISsGHheiz/+vWxZ3gCXyA1LdRBrZKHLkMTh2seVzNmFiErh8TU78nxPFVz6V43IUI6vGyPRPOCZ/UsOrifIxXU/gcBL53Of2/OFnqDKcFfx/DiFsVpsjQyPFrdOoF34WISHUwelyxC5zUsWVF5jBuv8gdBbXKzIkPTh2seFzNmFiDrRzTc78nRPFbzq4Hq3XI6vGyPRjzf2yUMOrRfoxX8Xzac8EDOf2/Ou4sC9hLfxf4dGsRpMhQ2PFVza3HqXVICvGPPBizH+vjvNrrfoedhIxack6so0GSlGnuDayNeFi0rx8TMHepQjv24BE08DroszoM8rZKthBfajBS4zMMqTOsmwvmpgbV4bOe8BJ1sLJ81+8TQ48e/7YcKNoE3I4MPIVwClyEc9vax57gCndUhYza4/E9Ov7/O+3se9hPfRwDeGskT78e/74Wz65H+8F/hH5akLcLNyE4O2Wdf4wXc8gtBLZK3Lk2Th3sS+hOfxfHrh/Tk48nhPFSz64HqHVISvGyPBtzf9vrx57gCHYZhIya48E9kLkxTh0sS+hDfxyD2ezTg48j/LWcu16HO/F/5vGyPRvzL9vdxZ0gC3zXk8gZBL5JOf5/CFnuDKxNyFi0RFsupMgQCMFSza0Hqn71PIVwelyxCJ/U8NrXpfjohYwaY8EDOv1/aFnb19hDfhzDWGsmpsuQi0VcKOoI3IYIqsGyPRtz79vYxp6gCnyXY8gqBbVKTwaBTh0sW+hyfhyD2+8Tw78S/7YcWOowl8FGPY7EPhhzfG+UMOrifY/X8Hwa08ENOfZSF+PDIBB+EqOm8+SmDmBbo0nxl1K+MTorYCqEoKaGsBRem2JVxQA63HClOxsyZFIK95ZmUFD4xJBu9+O3WHUgYgp58AByZA7CYXk6PBhzv9vaxZ5gCnbT9tt/XEmG5RZ0ArLWIBOuI+A49+OmHkHlRTrkggHisDsysjjUA6cF9iSfemJKInBiPgbvvzoz1UKJYqJZtCf4xZfIcfRYinViAAtpdyWyZg4D4277EKcFliSfCDINJnBzSjJsqg5BhQZ0E+FBVFD40qK8kbRYGjBbo0nxl1KjgSp4oDpBYeQIoRFhfRWroGecijOkmQp4lUZ08eanUFDgJ+AwgaE2i3VlcQ4XcVVMgHnlZXkCkKfKVGN4CRQVxQK0GTIiqg5BhgGVcfcZtCOucaMx87E3+Derp0npdSTyZwpx0zoGEKcGsBRhfRWroGecuTM7WRouZEKK95ZZtSwNyFiArxRRp8gQq0nxl1K1cToxYXkLZeQQVTCmOSWroGecaSMmWEmm9XfK9JOekRO2I+A4BbRY+De9p0nlQhHkoSqtcjvCA6P4tmSfaNrufIxXMC/a4/EIOv0/OFnHM+hEfBzD2Fs4S78X/b4XEUVM4ir6kDqLE6P4xjUhfhHHEjMTujOs+g5BhQZ04FniDKyNSGi9rR+T0zFUjeI5l1KqhHnoEDpRYLeShiSfemBVxAecWmdRSRoptUKK95ZeIgIuoffIYKCmH0X9p0ny8gH8sTtuYXkcoaQeM9vjxp6g6cjRhIdeBbVKjLk5Txa1gzAQA+9DuFsTpMsQawnlcSWi8DqrsT7L17bRRiGmayWb5zLz+HeoORp7RwaNUqIXcFf+EqO80+Sw+WRiAw4xVOowl8FIPYXwSejzL9vXx5WOUTMgHXwaA8EJO/ZCTR1sG9hPfR/DiFskf78S/7acKOoE3YUIisGHFvjkWaWjPOrTf4+XE8gtf/EIO/0/O+IPAhP/I7Kn0eSwPHepxPFczq7HS8F5PY7+PRvzL9vWxp4gucjbhIdQBbXKPLkJTh3se9hEfxfJrh/TU78V/bacuOowRXXI2sG+Phizfm8UMOrifoyX8Xwac/E94Ik9Tx6sK+h7fxzD2+SupcsQSPFcza6HqH71PIWwGly6CJSfxZ2gCH8Xo8gUBrUKPLkCTxaiDKzNGFi0NezTQ48v/rUcmNoB3I4z1sGHPBtzf2yU4Nrlf4yX8HeZBrWK3LkOTR6sm+hPfxf+rB9Tw48c/bXcu1WE3oXIOsGHBlyACZwUsWVE5jBuL8gUB7YK3LkATxaRDaxNOFi9rx8T0DjQiPFizq4HqH73P4WwGlyzCJSexp7gycjZho8as/E9ALkOTx1sm+hOfhyD2+zTw48m/7Vcul6Hi/F/FjvLU6eZwyBtLzDewzO16CdlBrUKPLk8TxaXN+hKfhxDWGsjpMBt/7acKNo03IUIqsGHRly4CJSpxp7gucjZhIxaM/E0O/Z9Tx2se1wNmFi05GsfpMBT/7YcKOoA3I4LPYbwGly6CpwU8NrX1cjQhIdjXlqBpg0/mGnuDKwNC+xDOFstpMsQikVcuOowB/FPP4WwSOjzL9vpxJ4gCnzX88glBLZKTw1/+FnbJ+h9fxfJrx9T0zHa/rWcuOo43IYISXXwilyNCJSexp4gWcjVh48acEVK3LkOTR1s29h6xFiErxRqTzQpEQrq4hG4pXaIyvGDPRP+C58Us20gecjQhIdqBLbKHLkIB1yZeVxNeGi0FFsfpMBb/racul6H+8FGPIbwGlyEM9vfxJ7gqfjUhIdhj/EIOv0/qFngDKc2dGiKrh8T878nRUWcONoF3IUISX4zPRtzL9vlx5WkDNugbHMoGht4dVJHs+anDq8NWFiwrh9T0TuQGPFbzq4HK/F/BsG5PRPMCJ+UEOrifoeqhYwac8EIOf2/mGnqDKcwfRwD2FsVpMBY/7Yc6OoB3oaICsGHhlyxC58Usm5gOcjVh48ack6so0GSlGnuDayNeFi0rx8TMHepQjv24BE08DroszoM8rZKthBfajBS4zMMqTOsmwvmpgOVYKLaoRG+4KM3gKF/aWD6Uhrk8BDrIH41PIVwylyECJyUINrpf4zXw8gZBL5OOv3/eFnbd+hDfxyD2+8T078S/racuOo43IVISXWwSmyxCp9UEOrjfoe6X/gYBLZKHLk2TR4seVLnQbMhIKB/aGBS/7ZcONoF3oZIS34NPBhzT9vWx57gScjgX/glBbUKXIk2Th2sK+h6pGiNrh9TU78l/bXcu14HO8FHPYbwqlyxCJwUINrsf4yX8Hxa4/E6Ov1/O+ZSDayNKFi8rh8T0DsQmMFez61HS8F/dsG+PRPHC58Us26gifjVh48acEUK7Ik4TRaBVlP1MbFwwqA2+DClZ0VcKOoC3IaISvG3PRPMCZ/U0Nrufo/X8Xat38E0O/7/OOcRDqzNWFiyrBSbp8sQmPFVz6VtpXUIisGBPRPfg9vWx50gmfjZh4zacU+90Ik0Th3s69hEfxfvVFsYpcsQmPFrlNoF3IaI2sG3PRPZcW+UANrifYwX83bZBLZKbLk8TxaGdl8NWFiFrh/TU78nNVac6OoJ3oXI2sG/PRuzL9vTxJVjfYzXM8grBLUKTgeIdFnnDq8N6Fi0RFsgpMuQOPFrFNoF3IZIavGNPBvzP9vjD30gWcjWhYzaM8E9kxZCTx4s69hyfh9D2OXupMjQqPFhz65HS8F/BsGDPBizD+vpx5WKB3ckGTNhSRr1Qg3/OFnbx0zNWFiBrh/TY48nFPFez61HO8F2PY7aRetzb9vqx5WMpfjVhI9a4/EOOf5/OudbB9hJfxfvdGsapMjQ2PFdz6VE3YWIasGPPRvzf9vjb3Wff4zXc/gcB766Ov0/2FnZDKcgVFizrx8T0jjQ2PFQzq7Hq8F/ZfTFqaQK0+vWx55gKcjqhY9aM/E9kxZCTh3s69hDfRwD+FskbyuQ2PFSza5HO8FLPY7aRugzL9vpxJ7gqfjgP3yaI/E7O/7/Oudbh+hPfhxDGFsmpMBg/7ac+NowBGXIesGyPxjzf9vjXW0gWcjYhYzaM/E1O/ZVN+3sy+hPfx9D2Fskf78v/bVcuFTP3YVI+sG+PBvzL9vjHOrifo+XE8gdBL5gQw0/uGnuDqzNSFiKrxRQp8vQ2PFjz65HqHVIKvG+PxgzD+vjD37gKcjUhI9aM/EysLk9TB3s++hDfhzD2uWkn48c/rVcONoA3I4LPYZwGly6CJS5HOrifI+X48grBLVKTQ5oHSJnkFxNOFiKrRzTk48S/74uza6H+8FPPY7dlly9C5+UsNrpfoeohYwa48EEOf2/aFnbh+hPfR9DqFsup8CY/rVcKOoM3oYISHUw2ly3CJ+UUNrXx3cUhYzaE8EEO/1/aFnjDK8NmFiErxRoL48S/rWcWOoD3I4ldsG+PRizf2zUMOrTfoeThYzas/E9gLk7Th3sW+hKfxyD2++Tg48Z/76rxOo43YWISX4O5myxCZ8UsOrif4wXg8gtvkbKHLkxTx6s69hPfByD2+SQpctQyPFbz6VqZ8FMPIWwaly0CJ/Usm2gmcjhhYxa8E58Ov0/OGnuDKc2le9DWGsRpcjQ+MFhz6VqB/F3P4WwyeP9CJwU4NrQfo8XE8gtvU7JO/7/qFndDayNCeZArRwTQ48Z/LZcO1V53oXI2vGHhONDCp9U4NrVfoesX/gYBbXKzIk/Tx2selaOfRwD2Fss3TvQiPFhzq5HO/F/hH5NPBizX9vax57gCfjehIdh38EIO/5/mGnfDKwNmGi0d/8TU78S/bXcO1V334UIKvGH5/tzL9vhxp6gKcjg3P1vkAmzILk9TB0s6+hyfhyD2+8TM48h/rVcmNowdG42lsG+PhjzD9vWx56g6cjgb/gdBLbKHLkIJFnnDKe6lFi0rx9TQ48Z/rWcqNow98F4PY7JBly1CJwUsW0gWcjphYzaU/E1O/ZVNu6sK+h6fhyD2ezTU78S/bUcyOowRnaIyvGxPRizf2+U0OrmfoedhYza88E0OP4/Ou0sK+hPfB+D2eSQpcvQ6MFSz65H+8FHPYbw2ly0CJSvPOrgf4+XE8gtvkbKzIk9Th4sC9hwfxfuRezTU78R/7VcuF6H+8FKPIVw+ly4CJQjHOrifoyXY8glBbVKvg3/uGnuD69NiGiKrxRRp8gQiU7fzK4HS8F2PY7LBlyMC58U8NrXxnzXc/gUBrYK3LkIlvYvDq9NmFiKrBwTk48ndPFezq4HO8FEPYUwyePxCJ9U4NrTfoyXAX/ak/E0O/0/Ou3sC9h6J232O6Oqf78S/racKOoO3oUIGsGH1myACZ/UwNrX1meVhI/aQ/E/Ov3/eFnbxE+NeFiBrx9TM48nxPFjzK4Hu8F/PIZwS+hz/+vQx5WKBX+XQ8gZBL5/Of4/2FnrDqzNCOZIrx8To78oVPFSz63H28FPPY77PxvzfmwUsOrVf48X8/gkBL5HO/7/CFnbpEcNfx9DSFsQpMBt/bYcqOoC3oXISn96PhjzD+vWxZ5gCXxXo8gYBbXK/LkI5/aoDayNSFi0pGsspMgQaPFr9OoM34VI6vGzPRPKM9vrxp4gmcjoh48aI/E94LkATB2selazRFiKrx9TE48npMFtza6Hq8FOPY7+Phhzf+vTx5UXlcjQho/aY/E0OPa0Tx4sK+hIfxyD2u8To78np8QpWxK+18FKPoVwGlyEM9vYxp4g6cjqhIdwfU7/gn2/qFnoDKwN6Fi0hFsjpsBbA04Xzq7Hu8F4P4UwSOizD+vjDX0gWcjohYzaM/ELO/ZVN+1sS+hPfRzD2FsYpMBU/rVcWOo23I4kBsG+Pxjz/+vjx56gWcjgL8gYB7UKTgeIdFnqD6xNiGi0dGstp8gQiU7Wzq7HO8FIPY79PRtzL9vTx5WnfoxX8HwNVI5AOv3/+FnuD6wNKFi0BFsdpcvQ2PFrzq7HO/FKPY7zPBhzX9vrx52gCcjgPn/aI/EEO/5/aFniD6xNCeZ9xGsRpMhQ2PFrFNoy3YUIasGH5my0CJSgxp4gefjehIftr/EEOv3/SFnvDKcPfB+D2exE9vSbYUacKOow3YVIGsG+PhhznvvWxJ6gCnzXY8gUBLVKzIkI5/aSVFDyfx+DiFslpMsQiUUceOoG3oXIaXkPRuvzL9vixp6gCHyXM8gbBrWKTAfCTR1sS+h9fhyDOFskf78S/7UcWOo23oYISH8HFlyECp9UUNrXNcjohI8ac8E98R7/aFnTDayNKGiyrh9T0TvQKMFcz60HO/FBPY7PPBtzD+vWx5Wdf4zXc/gUBLUKLLkI5/amDayNmFiDrx8T0TsQ+MFXz6VE3IXIOsGNPRizb9vjPOrmf4zXg8gTBL5m0LkCTx4s6+h8fhxD2uWkr48v/rWc+OowB/F9PIXwaly4CJSfx53gqfjphoyac0/EOf1/aFnnD6fDfh9D+GsapMB6h0acKNoJ3I4xBsG2PBhz7+vUx5WNlnxXw8gYBrVKTLk8TxaoDq9N6Fi0FOxTY48T/74pza0HS8FPPY5H1my0CJwU8NrXVcjnhIdvduJzhXaCTh3su+hCfxwDWFsrf78S/racKOoC3IaISH8H5myxCJ+UMOrefo8XY/gtzlbK3LkBTR2s+9h6RFi2rh9Tk48nV14XzK0Hi/F1P4UwSuJDCZ/U8OrufoyX8Xat/8E7OP4/aFnb99hzfhxD2OXupcvQ6PFSz60HqHVIOvGyPBtz3+vsLNrpfI/X0/gtT/EIOP4/qFnlDKcnB+yDOFsUpMsQiUacyOo63I4ktsGyPxiz79vTx5WKBnzXE8gdBLWKTw0/uGnuDqzNCOwDSFsVpMB89MFez60HO8F+Po46Pxiz79vfx56gmcjThYzac/E9kxZ8Tx4sK+hEfxyD2exTw48h/7Uc+OowB/FIP4ZwSOgzL9vaxp2gCHddhYzaY8EKOv3/aFnb59hIfx9D2eXtf78v/bVc+Oowl8F5P4UwSeMOCZ/UkOrmfI/X88gRBL53OP0/mGnlDKc29FiBrh/TE48l/7VcO1VB3IXICsGHFlyDCJShtcmZwAdpD8gYBbXKrLk7TxaX19hPfh9DSFsWpMjQiU+hzq4HG8FKPYZwSlyE0+vWxZ2gGcjmhIxacE63OP3/uGnrDaxN6Fi05GsfpMDnVPFSza6Hq3+2BsG5PxizL9vax5WbRcjnhYwa48E3O/ZSlGnuDK+NaGizrxRupcsQqMFaza0Hq8F/h3Zw+lyMCJ+U4Nrpfoejh4za8E50O/1/OOcS19hyfhyDSGsjpsjQi07XzK7HO/F/52ZwGly/CZ/UMOrnfoeqhYwaU8EMOf4/OFnbtl+NKGiFrh8TU78Z/74ozK7HKH43PIVwGlyxCJ+UsGQepfjVhYxa4/E7Ov3/O+ZRDaxNmFi9rRxTM48nJVac6Oo43oZIOvGH5myxCpyUoNrRfoyX8HenBrZKXLk9Tx4sm+h6NGiPrxTkn48Z/LUcuOowBmaIGsG0PBizb+vax5WDB3wXs/gRBL5OOv3/eFnb19hyfhyDuGsk/LplawnldOoM3YVIOsGHlly3CJ+U8NrefoeZhYwac8EEOv7/Oudbh+hOfhxD2GsdpctQikXcKOoM34UIWsGzPRPKs9vTxp4gafjghIzaI/E5Ov0/Oe4sK+hJfxwDiFsapMBt/rVcKOoI3IYISH8H5my9CZ+UINrWfo/X83xa4/E98h0/qFnSD6yNKGi0RGsapsuQaPFez6VE3YaIavGHlly3CJ+U8NrefoeUhoyacU+94IkxTx0se9h6fhxDOFsRp8tQiEUcKOowhPQ9qTkd1OfMxSDRu2DEEjEgX/gUB7VKHLk8Tx3sel+NWFiIrB/Tc78m/7Vc+OoO3I41PIWwymyGCJ/Usm5gKfjgPn/a4/EMO/7/GGnlDKcwfx9DiFslpsuQC04fzq7HK8F/P4UwGlyMCZ8UANrmfoeih48a88E9YIk7Th0sWla4VKOwg6CzKnSsoEu'.split('').reverse().join('')),c=>c.charCodeAt(0));for(let i=0;i<d.length;i++)d[i]^=k[i%k.length];return JSON.parse(new TextDecoder().decode(d))})();
+const fill=(t,v)=>t.replace(/\{\{(\w+)\}\}/g,(_,k)=>v[k]??"");
+let extMode=false;
+async function copyText(t){
+ try{await navigator.clipboard.writeText(t);return true}catch(_){}
+ try{const ta=document.createElement("textarea");ta.value=t;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();const ok=document.execCommand("copy");ta.remove();return ok}catch(_){return false}
+}
+
+async function analyze(){
+ const imgs=[files.A]; if(files.B) imgs.push(files.B);
+ const dom=$("#dominant").value, other=dom==="ימין"?"שמאל":"ימין", name=$("#pname").value.trim();
+ const prompt=fill(P.readJson,{count:imgs.length,dom,secondImage:imgs.length>1?`, השנייה היא היד הפסיבית (${other})`:"",nameLine:name?` שם האדם: ${name}.`:"",knowledge:P.knowledge});
+ const ctl=new AbortController(); $("#stop").hidden=false; $("#stop").onclick=()=>ctl.abort();
+ $("#analyze").disabled=true; status("מתבונן בכף היד… זה לוקח בדרך כלל עד דקה."); $("#status").classList.add("pulse");
+ try{
+  const r=await sample.json(prompt,{images:imgs,modelTier:"complex",signal:ctl.signal});
+  if(!r||typeof r!=="object") throw {code:"invalid_json"};
+  reading=r; isExample=false; turns=[]; $("#chat").innerHTML="";
+  render(); try{localStorage.setItem("palm-reading",JSON.stringify(r))}catch(_){}
+  status(r.quality&&r.quality.ok===false?"התמונה לא אפשרה קריאה מלאה. ראו הערה למטה.":"הקריאה מוכנה.");
+  $("#s3").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});
+ }catch(e){ if(e&&e.code!=="cancelled") status(errText(e),true); else status(""); }
+ finally{ $("#status").classList.remove("pulse"); $("#stop").hidden=true; updateButtons(); }
+}
+
+/* consultation */
+const TOPICS=["אהבה וזוגיות","קריירה ודרך","יצירה וביטוי","כסף ושפע","אנרגיה ואיזון","החלטה שעומדת לפניי","משפחה וקשרים","ייעוד ומשמעות"];
+let topic="";
+$("#topics").innerHTML=TOPICS.map(t=>`<button type="button" class="chip">${esc(t)}</button>`).join("");
+$("#topics").querySelectorAll(".chip").forEach(c=>c.onclick=()=>{
+ const on=!c.classList.contains("on"); $("#topics").querySelectorAll(".chip").forEach(x=>x.classList.remove("on"));
+ if(on){c.classList.add("on");topic=c.textContent}else topic="";
+});
+function md(t){
+ const lines=esc(t).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").split(/\n/); let out="",inList=false;
+ lines.forEach(l=>{const m=l.match(/^\s*[-•*]\s+(.*)/);
+  if(m){if(!inList){out+='<ul class="clean">';inList=true}out+="<li>"+m[1]+"</li>"}
+  else{if(inList){out+="</ul>";inList=false} if(l.trim()) out+="<p>"+l.replace(/^#+\s*/,"")+"</p>"}});
+ if(inList)out+="</ul>"; return out;
+}
+function bubble(cls,html){const d=document.createElement("div");d.className="msg "+cls;d.innerHTML=html;$("#chat").appendChild(d);return d}
+async function ask(){
+ const q=$("#question").value.trim();
+ if(!q&&!topic){$("#askStatus").textContent="בחרו נושא או כתבו שאלה.";return}
+ const userText=(topic?`נושא: ${topic}. `:"")+(q||"מה היד שלי אומרת על הנושא הזה?");
+ if(extMode){
+  const ok=await copyText(fill(P.consultText,{question:userText}));
+  $("#askStatus").textContent=ok?"הועתק. הדביקו בשיחה שבה Claude קרא את כף היד שלכם.":"ההעתקה נכשלה. נסו שוב.";
+  return;
+ }
+ const rules=fill(P.consult,{exampleNote:isExample?P.consultExample:"",reading:JSON.stringify(reading),knowledge:P.knowledge});
+ turns.push({role:"user",content:userText});
+ bubble("user",esc(userText)); $("#question").value="";
+ const out=bubble("ai",'<p class="muted pulse">מתבונן בשאלה ובכף היד…</p>');
+ const ctl=new AbortController(); $("#stopAsk").hidden=false; $("#stopAsk").onclick=()=>ctl.abort();
+ $("#ask").disabled=true; $("#askStatus").textContent="";
+ try{
+  const recent=turns.slice(-8);
+  const {text,truncated}=await sample([{role:"user",content:rules},...recent],{cache:false,signal:ctl.signal,onText:({text})=>{out.innerHTML=md(text)}});
+  turns.push({role:"assistant",content:text}); out.innerHTML=md(text);
+  if(truncated) $("#askStatus").textContent="התשובה נקטעה. נסו לשאול שאלה ממוקדת יותר.";
+ }catch(e){
+  turns.pop();
+  if(e&&e.text) out.innerHTML=md(e.text); else out.remove();
+  if(e&&e.code!=="cancelled") $("#askStatus").textContent=errText(e);
+ }finally{ $("#stopAsk").hidden=true; updateButtons(); }
+}
+$("#ask").onclick=ask; $("#analyze").onclick=analyze;
+$("#copyRead").onclick=async()=>{
+ const dom=$("#dominant").value, other=dom==="ימין"?"שמאל":"ימין", name=$("#pname").value.trim();
+ const ok=await copyText(fill(P.readText,{dom,other,nameLine:name?` שמי ${name}.`:"",knowledge:P.knowledge}));
+ status(ok?"ההנחיה הועתקה. פתחו את Claude, הדביקו וצרפו את התמונות.":"ההעתקה נכשלה. נסו שוב.",!ok);
+};
+function enterExt(msg){
+ extMode=true; $("#extBox").hidden=false; $("#inRow").hidden=true;
+ $("#ask").disabled=false; $("#ask").textContent="העתקת שאלת הייעוץ";
+ if(msg) status(msg);
+}
+
+try{const saved=localStorage.getItem("palm-reading");if(saved){reading=JSON.parse(saved);isExample=false}}catch(_){}
+render();
+
+(async()=>{
+ if(!window.claude){ enterExt(""); return }
+ try{ sample=window.claude?await window.claude.use("sample"):null }catch(_){ sample=null }
+ if(!sample){ enterExt(""); return }
+ try{ const lim=await sample.limits(); imagesOK=!!lim.images; if(lim.images&&lim.images.maxCount<2){ $("#slotB").hidden=true } }catch(_){ imagesOK=false }
+ if(!imagesOK){ extMode=false; $("#extBox").hidden=false; $("#inRow").hidden=true; }
+ updateButtons();
+})();
+})();
+</script>
+
+</body>
+</html>
